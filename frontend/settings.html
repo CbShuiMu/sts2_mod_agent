@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STS2 Mod Agent — Settings</title>
+  <link rel="stylesheet" href="./shared.css" />
+  <link rel="stylesheet" href="./settings.css" />
+</head>
+<body>
+  <header class="site-nav">
+    <a class="brand" href="/">
+      <span class="brand-mark">S</span>
+      STS2 Mod Agent
+    </a>
+    <nav class="nav-links">
+      <a class="nav-link" href="/" data-i18n="navHome">首页</a>
+      <a class="nav-link" href="/make" data-i18n="navMake">制作</a>
+      <a class="nav-link" href="/mod" data-i18n="navMods">模组</a>
+      <a class="nav-link" href="/query" data-i18n="navQuery">查询</a>
+    </nav>
+    <div class="site-nav-actions">
+      <button class="nav-lang-btn" id="langToggleBtn" type="button">EN</button>
+      <button class="nav-settings-btn active" id="settingsToggleBtn" type="button" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.36.16.66.42.88.74.21.32.32.7.32 1.09 0 .39-.11.76-.32 1.09-.22.32-.52.58-.88.74z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="settings-shell">
+    <aside class="settings-sidebar" aria-label="Settings categories">
+      <nav class="settings-nav" id="settingsNav"></nav>
+    </aside>
+
+    <section class="settings-panel">
+      <header class="settings-panel-header">
+        <h1 id="settingsPanelTitle"></h1>
+        <p class="settings-panel-hint" id="settingsPanelHint" data-i18n="envModalLeaveBlankHint"></p>
+      </header>
+
+      <div class="settings-status" id="settingsStatus" aria-live="polite"></div>
+
+      <form id="settingsForm" class="settings-form" autocomplete="off" spellcheck="false">
+        <div class="settings-fields" id="settingsFields"></div>
+      </form>
+
+      <footer class="settings-actions">
+        <a class="settings-btn" href="/" data-i18n="envModalCancel">取消</a>
+        <button class="settings-btn primary" type="button" id="settingsSaveBtn" data-i18n="envModalSave">保存</button>
+      </footer>
+    </section>
+  </main>
+
+  <script src="./i18n.js"></script>
+  <script src="./shared.js"></script>
+  <script src="./settings.js"></script>
+</body>
+</html>

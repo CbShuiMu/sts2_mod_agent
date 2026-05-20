@@ -1,0 +1,43 @@
+{
+    "rules": [
+        {
+            "name": "cards",
+            "file_path1": "images/atlases/card_atlas.sprites",
+            "file_path2": "images/packed/card_portraits"
+        },
+        {
+            "name": "powers",
+            "file_path1": "images/atlases/power_atlas.sprites",
+            "file_path2": "images/packed/powers"
+        },
+        {
+            "name": "relics",
+            "file_path1": "images/atlases/relic_atlas.sprites",
+            "file_path2": "images/atlases/relic_outline_atlas.sprites",
+            "file_path3": "images/packed/relics"
+        },
+        {
+            "name": "potions",
+            "file_path1": "images/atlases/potion_atlas.sprites",
+            "file_path2": "images/atlases/potion_outline_atlas.sprites",
+            "file_path3": "images/packed/potion"
+        },
+        {
+            "name": "orbs",
+            "file_path2": "images/orbs"
+        },
+        {
+            "name": "enchantments",
+            "file_path1": "images/enchantments"
+        },
+        {
+            "name": "afflictions",
+            "file_path1": "images/atlases/affliction_atlas.sprites",
+            "file_path2": "images/packed/affliction_portraits"
+        },
+        {
+            "name": "rest_site_ui",
+            "file_path1": "images/ui/rest_site"
+        }
+    ]
+}

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STS2 Mod Agent</title>
+  <link rel="stylesheet" href="./shared.css" />
+  <style>
+    .home-shell {
+      width: calc(100% - 72px);
+      height: calc(100vh - 110px);
+      margin: 20px auto 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .home-page {
+      width: 100%;
+      height: 100%;
+      padding: 52px;
+      border-radius: var(--radius);
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 14px;
+      text-align: left;
+    }
+
+    .hero h1 {
+      font-size: clamp(34px, 6vw, 64px);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      font-weight: 800;
+    }
+
+    .hero .tagline {
+      color: var(--text-secondary);
+      font-size: clamp(16px, 2.6vw, 22px);
+      max-width: 760px;
+      line-height: 1.45;
+    }
+
+    .feature-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1080px;
+      margin: 0 auto;
+      align-content: center;
+      justify-content: center;
+    }
+
+    .feature-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 22px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.68);
+      text-decoration: none;
+      color: var(--text);
+      transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+      border-color: rgba(0, 113, 227, 0.3);
+    }
+
+    .feature-icon { font-size: 30px; line-height: 1; }
+    .feature-card h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+    .feature-card p { margin: 0; color: var(--text-secondary); font-size: 14px; line-height: 1.5; }
+
+    @media (max-width: 720px) {
+      .home-shell { width: calc(100% - 32px); }
+      .home-page { padding: 28px; gap: 26px; }
+      .feature-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-nav">
+    <a class="brand" href="/">
+      <span class="brand-mark">S</span>
+      STS2 Mod Agent
+    </a>
+    <nav class="nav-links">
+      <a class="nav-link active" href="/" data-i18n="navHome">首页</a>
+      <a class="nav-link" href="/make" data-i18n="navMake">制作</a>
+      <a class="nav-link" href="/mod" data-i18n="navMods">模组</a>
+      <a class="nav-link" href="/query" data-i18n="navQuery">查询</a>
+    </nav>
+    <div class="site-nav-actions">
+      <button class="nav-lang-btn" id="langToggleBtn" type="button">EN</button>
+      <button class="nav-settings-btn" id="settingsToggleBtn" type="button" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.36.16.66.42.88.74.21.32.32.7.32 1.09 0 .39-.11.76-.32 1.09-.22.32-.52.58-.88.74z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="home-shell">
+    <section class="home-page">
+      <div class="hero">
+        <h1>STS2 Mod Agent</h1>
+        <p class="tagline" data-i18n="homeTagline">杀戮尖塔 2 Mod 开发智能助手</p>
+      </div>
+
+      <div class="feature-grid">
+        <a class="feature-card" href="/make">
+          <span class="feature-icon">💬</span>
+          <h2 data-i18n="homeCardMakeTitle">制作</h2>
+          <p data-i18n="homeCardMakeDesc">与 AI 对话，智能生成、修改和调试 STS2 Mod 代码，支持 RAG 检索增强</p>
+        </a>
+        <a class="feature-card" href="/mod">
+          <span class="feature-icon">📁</span>
+          <h2 data-i18n="homeCardModsTitle">模组</h2>
+          <p data-i18n="homeCardModsDesc">浏览和管理本地 Mod 项目，查看各模块的 C# 模型文件结构</p>
+        </a>
+        <a class="feature-card" href="/query">
+          <span class="feature-icon">🔍</span>
+          <h2 data-i18n="homeCardQueryTitle">查询</h2>
+          <p data-i18n="homeCardQueryDesc">向量检索游戏数据库，精准查找卡牌、技能、遗物、药水等代码上下文</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <script src="./i18n.js"></script>
+  <script src="./shared.js"></script>
+</body>
+</html>

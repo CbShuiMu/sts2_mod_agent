@@ -1,0 +1,255 @@
+/* Settings page — two-column card matching the make-page workspace. */
+
+.settings-shell {
+  width: calc(100% - 72px);
+  height: calc(100vh - 110px);
+  margin: 20px auto 12px;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.settings-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 16px;
+  background: rgba(255, 255, 255, 0.72);
+  border-right: 1px solid var(--line);
+  min-height: 0;
+}
+
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.settings-nav-item:hover {
+  background: rgba(29, 29, 31, 0.04);
+}
+
+.settings-nav-item.active {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: var(--line);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.settings-nav-item.is-missing {
+  color: var(--danger);
+  border-color: rgba(255, 69, 58, 0.35);
+  background: rgba(255, 69, 58, 0.06);
+}
+
+.settings-nav-item.is-missing::after {
+  content: '*';
+  margin-left: auto;
+  color: var(--danger);
+  font-weight: 800;
+}
+
+.settings-nav-item.active.is-missing {
+  box-shadow: inset 0 0 0 1px rgba(255, 69, 58, 0.45);
+  border-color: rgba(255, 69, 58, 0.45);
+}
+
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 32px 40px 28px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.settings-panel-header {
+  display: grid;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.settings-panel-header h1 {
+  font-size: clamp(22px, 2.4vw, 28px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  margin: 0;
+}
+
+.settings-panel-hint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.settings-status {
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-height: 18px;
+  flex: 0 0 auto;
+}
+
+.settings-status.is-success { color: var(--accent); }
+.settings-status.is-error { color: var(--danger); }
+
+.settings-form {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  border: 0;
+  margin: 0;
+  padding: 2px 6px 4px 2px;
+}
+
+.settings-form::-webkit-scrollbar { width: 10px; }
+.settings-form::-webkit-scrollbar-track { background: transparent; }
+.settings-form::-webkit-scrollbar-thumb {
+  background: rgba(29, 29, 31, 0.18);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.settings-form::-webkit-scrollbar-thumb:hover { background: rgba(29, 29, 31, 0.3); background-clip: padding-box; }
+
+.settings-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.settings-source-error {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: var(--danger);
+  padding: 10px 14px;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  background: rgba(220, 38, 38, 0.06);
+  border-radius: 10px;
+}
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.settings-field .required-mark {
+  color: var(--danger);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.settings-field.is-missing input {
+  border-color: rgba(255, 69, 58, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 69, 58, 0.10);
+}
+
+.settings-field.is-missing input:focus {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(255, 69, 58, 0.20);
+}
+
+.settings-field input {
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 0 14px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settings-field input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+}
+
+.settings-field input::placeholder {
+  color: rgba(29, 29, 31, 0.35);
+}
+
+.settings-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  flex: 0 0 auto;
+}
+
+.settings-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-radius: 999px;
+  padding: 0 22px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.settings-btn:hover { background: rgba(29, 29, 31, 0.04); }
+.settings-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.settings-btn.primary:hover { background: #005bbf; }
+.settings-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+@media (max-width: 720px) {
+  .settings-shell {
+    width: calc(100% - 32px);
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .settings-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding: 14px;
+  }
+  .settings-nav { flex-direction: row; flex-wrap: wrap; }
+  .settings-nav-item { flex: 1 1 auto; }
+  .settings-panel { padding: 24px; }
+  .settings-fields { grid-template-columns: 1fr; }
+}

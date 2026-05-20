@@ -1,0 +1,59 @@
+# ─── Secrets ──────────────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── Python ───────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ─── IDE / OS ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# ─── Claude Code / Serena / MCP local state ───────────────────────────────
+.claude/
+.serena/
+.mcp.json
+
+# ─── Tool binaries (download separately) ──────────────────────────────────
+tools/*
+!tools/ExportMod.cmd
+# ─── Slay the Spire 2 proprietary content ─────────────────────────────────
+# These are extracted / decompiled from the shipped game and MUST NOT be
+# redistributed. Each contributor must place their own copies locally.
+data/libs
+data/logs
+project_json/
+
+# ─── Generated / rebuildable data ─────────────────────────────────────────
+data/*
+data/vector_db/                # built by `python backend/scripts/build.py`
+data/milvus/                   # docker-compose Milvus volumes
+data/logs/                     # request logs
+data/models/                   # HuggingFace embedding cache (if local)
+data/Models
+data/localization
+!data/settings
+
+# ─── mods/ — only ship the template, ignore every other mod ──────────────
+# Real mods are large work-products that contributors generate locally; only
+# the bare-bones template lives in the repo as a reference — keep ALL of its
+# contents (including .godot/, bin/, obj/) so users get a runnable baseline.
+mods/*
+!mods/template/
+!mods/template/**
+
+# ─── C# user-specific files ───────────────────────────────────────────────
+*.suo
+*.userprefs

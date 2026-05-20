@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STS2 Mod Agent — Query</title>
+  <link rel="stylesheet" href="./shared.css" />
+  <link rel="stylesheet" href="./query.css" />
+</head>
+<body>
+  <header class="site-nav">
+    <a class="brand" href="/">
+      <span class="brand-mark">S</span>
+      STS2 Mod Agent
+    </a>
+    <nav class="nav-links">
+      <a class="nav-link" href="/" data-i18n="navHome">首页</a>
+      <a class="nav-link" href="/make" data-i18n="navMake">制作</a>
+      <a class="nav-link" href="/mod" data-i18n="navMods">模组</a>
+      <a class="nav-link active" href="/query" data-i18n="navQuery">查询</a>
+    </nav>
+    <div class="site-nav-actions">
+      <button class="nav-lang-btn" id="langToggleBtn" type="button">EN</button>
+      <button class="nav-settings-btn" id="settingsToggleBtn" type="button" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.36.16.66.42.88.74.21.32.32.7.32 1.09 0 .39-.11.76-.32 1.09-.22.32-.52.58-.88.74z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="query-shell">
+
+    <!-- ── Left panel: inputs + library selector ── -->
+    <aside class="q-left">
+      <div class="q-left-inner">
+
+        <div class="q-hero">
+          <p class="eyebrow" data-i18n="queryEyebrow">向量搜索</p>
+          <h1 data-i18n="queryH1">查询 STS2 向量库</h1>
+          <p class="subtitle" data-i18n="querySubtitle">无需启动 Agent 聊天，直接搜索已索引的游戏数据。</p>
+        </div>
+
+        <form id="queryForm" class="q-form">
+          <label class="q-label" for="queryInput" data-i18n="queryInputLabel">查询内容</label>
+          <textarea
+            id="queryInput"
+            rows="4"
+            class="q-textarea"
+            data-i18n-placeholder="queryInputPlaceholder"
+            placeholder="描述一个效果、名称、API 模式，或中英文游戏文本"
+          ></textarea>
+          <button id="searchBtn" type="submit" data-i18n="querySearchBtn">搜索</button>
+          <div class="q-controls">
+            <label class="number-control">
+              <span data-i18n="queryTopKLabel">TopK</span>
+              <input id="topKInput" type="number" min="1" max="100" value="4" />
+            </label>
+            <label class="number-control">
+              <span data-i18n="queryEntitiesLabel">实体数</span>
+              <input id="contextNInput" type="number" min="1" max="20" value="3" />
+            </label>
+            <div class="status-pill" id="serverStatus">Connecting</div>
+          </div>
+        </form>
+
+        <section class="q-libraries" aria-label="Vector libraries">
+          <div class="section-heading">
+            <h2 data-i18n="queryVectorLibsTitle">向量库</h2>
+            <div class="library-actions">
+              <button id="selectAllBtn" type="button" data-i18n="querySelectAll">全选</button>
+              <button id="selectNoneBtn" type="button" data-i18n="querySelectNone">取消</button>
+            </div>
+          </div>
+          <div id="libraryGrid" class="library-grid"></div>
+        </section>
+
+      </div>
+    </aside>
+
+    <!-- ── Right panel: results (internal scroll) ── -->
+    <div class="q-right">
+      <div class="summary-strip" id="summaryStrip" hidden>
+        <span id="summaryText"></span>
+        <button id="copyJsonBtn" type="button" data-i18n="queryCopyJson">复制 JSON</button>
+      </div>
+
+      <div class="q-results-area" id="results" aria-live="polite">
+        <div class="empty-state">
+          <strong data-i18n="queryEmptyTitle">随时可以开始</strong>
+          <span data-i18n="queryEmptySubtitle">选择一个或多个向量库，然后运行查询。</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .query-shell -->
+
+  <!-- Templates -->
+  <template id="libraryTemplate">
+    <label class="library-tile">
+      <input type="checkbox" />
+      <span class="library-name"></span>
+      <span class="library-meta"></span>
+    </label>
+  </template>
+
+  <template id="groupTemplate">
+    <article class="result-group">
+      <header class="group-header">
+        <div>
+          <span class="group-domain"></span>
+          <h2 class="group-query"></h2>
+        </div>
+        <span class="group-count"></span>
+      </header>
+      <div class="context-list"></div>
+    </article>
+  </template>
+
+  <template id="contextTemplate">
+    <article class="context-card">
+      <div class="context-main">
+        <div class="context-title-row">
+          <h3></h3>
+          <span class="score"></span>
+        </div>
+        <p class="description"></p>
+        <dl class="meta-grid">
+          <div><dt data-i18n="queryDomainLabel">Domain</dt><dd class="domain"></dd></div>
+          <div><dt data-i18n="queryRoleLabel">Role</dt><dd class="role"></dd></div>
+          <div><dt data-i18n="queryFileLabel">File</dt><dd class="file"></dd></div>
+        </dl>
+      </div>
+      <details class="code-detail">
+        <summary data-i18n="queryCodePreview">代码预览</summary>
+        <pre><code></code></pre>
+      </details>
+    </article>
+  </template>
+
+  <script src="./i18n.js"></script>
+  <script src="./shared.js"></script>
+  <script src="./query.js"></script>
+</body>
+</html>

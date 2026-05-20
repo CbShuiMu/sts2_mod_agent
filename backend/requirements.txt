@@ -1,0 +1,26 @@
+# sts2_agent backend - direct dependencies
+# Python: 3.14 (conda env: sts2_agent)
+# 用于普通安装。需要完全复现锁定环境时请使用 requirements.lock.txt
+#
+# 安装：
+#   conda create -n sts2_agent python=3.14 -y
+#   conda activate sts2_agent
+#   pip install -r requirements.txt
+
+# Web 框架
+Flask==3.1.3
+
+# LangChain 生态
+langchain==1.2.17
+langchain-core==1.3.2
+langchain-community==0.4.1
+langchain-openai==1.2.1
+langchain-milvus==0.3.3
+
+# 向量数据库（milvus_lite 仅在受支持平台上启用本地 .db 模式；
+# 其它平台请通过 MILVUS_URI 指向远端 Milvus 服务）
+pymilvus[milvus_lite]==2.6.12
+
+# 嵌入模型推理（transformers + torch）
+transformers==5.7.0
+torch==2.11.0

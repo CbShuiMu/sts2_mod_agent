@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STS2 Mod Agent — Make</title>
+  <link rel="stylesheet" href="./shared.css" />
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    /* Wrap the chat workspace in a customcard-style card. Topbar reserves
+       ≈ 88px (18px margin + ~52px pill + 20px breathing room). */
+    .app-shell {
+      height: calc(100vh - 110px);
+      width: calc(100% - 72px);
+      margin: 20px auto 12px;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid var(--surface-border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .chat-panel { height: 100%; min-height: 0; }
+    .sidebar { height: 100%; min-height: 0; }
+
+    @media (max-width: 720px) {
+      .app-shell { width: calc(100% - 32px); }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-nav">
+    <a class="brand" href="/">
+      <span class="brand-mark">S</span>
+      STS2 Mod Agent
+    </a>
+    <nav class="nav-links">
+      <a class="nav-link" href="/" data-i18n="navHome">首页</a>
+      <a class="nav-link active" href="/make" data-i18n="navMake">制作</a>
+      <a class="nav-link" href="/mod" data-i18n="navMods">模组</a>
+      <a class="nav-link" href="/query" data-i18n="navQuery">查询</a>
+    </nav>
+    <div class="site-nav-actions">
+      <button class="nav-lang-btn" id="navLangBtn" type="button" data-i18n="languageToggle">EN</button>
+      <button class="nav-settings-btn" id="settingsToggleBtn" type="button" aria-label="Settings" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.36.16.66.42.88.74.21.32.32.7.32 1.09 0 .39-.11.76-.32 1.09-.22.32-.52.58-.88.74z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside class="sidebar" data-i18n-aria="conversationNav">
+      <span id="serverState" data-i18n="connecting" hidden></span>
+
+      <button class="primary-action" id="newChatBtn" type="button">
+        <span aria-hidden="true">+</span>
+        <span data-i18n="newChat"></span>
+      </button>
+
+      <div class="conversation-list" id="conversationList"></div>
+
+      <div class="sidebar-footer">
+        <button class="ghost-button" id="settingsBtn" type="button" data-i18n="aiSettings"></button>
+      </div>
+    </aside>
+
+    <main class="chat-panel">
+      <header class="topbar">
+        <div class="title-stack">
+          <div class="title-row">
+            <input id="conversationTitle" class="title-input" data-i18n-aria="conversationTitle" />
+            <span id="conversationId" class="conversation-id"></span>
+          </div>
+          <span id="chatMeta">Ready</span>
+        </div>
+        <div class="controls">
+          <select id="providerSelect" data-i18n-aria="selectAi"></select>
+          <input id="modelInput" class="model-input" data-i18n-aria="modelName" placeholder="model" />
+          <button class="ghost-button" id="saveDefaultBtn" type="button" data-i18n="setDefault"></button>
+        </div>
+      </header>
+
+      <section class="toolband" data-i18n-aria="retrievalAgentSettings">
+        <label class="toggle">
+          <input id="ragToggle" type="checkbox" checked />
+          <span>RAG</span>
+        </label>
+        <label class="toggle">
+          <input id="agentToggle" type="checkbox" checked />
+          <span>Agent</span>
+        </label>
+        <label class="toggle">
+          <input id="customDomainToggle" type="checkbox" checked />
+          <span data-i18n="customDomain"></span>
+        </label>
+        <label class="number-field">
+          <span data-i18n="entity"></span>
+          <input id="contextN" type="number" min="1" value="5" />
+        </label>
+        <label class="number-field">
+          <span>TopK</span>
+          <input id="descTopK" type="number" min="1" value="5" />
+        </label>
+        <button class="ghost-button" id="fileMcpBtn" type="button" data-i18n="localFiles"></button>
+      </section>
+
+      <section class="file-chips" id="fileChips" data-i18n-aria="selectedFiles"></section>
+      <section class="messages" id="messages" aria-live="polite"></section>
+
+      <footer class="composer">
+        <section class="composer-files" id="composerFiles" aria-live="polite"></section>
+        <textarea id="messageInput" rows="1" data-i18n-placeholder="composerPlaceholder"></textarea>
+        <button id="sendBtn" type="button" data-i18n="send"></button>
+      </footer>
+    </main>
+  </div>
+
+  <dialog id="settingsDialog" class="modal">
+    <form method="dialog" class="modal-body">
+      <header class="modal-header">
+        <h2 data-i18n="aiSettings"></h2>
+        <button class="icon-button" value="cancel" data-i18n-aria="close">x</button>
+      </header>
+      <div id="providerSettings" class="provider-settings"></div>
+    </form>
+  </dialog>
+
+  <dialog id="customDomainDialog" class="modal">
+    <form method="dialog" class="modal-body">
+      <header class="modal-header">
+        <h2 data-i18n="customDomainTitle"></h2>
+        <button class="icon-button" value="cancel" data-i18n-aria="close">x</button>
+      </header>
+      <p class="modal-hint" data-i18n="customDomainHint"></p>
+      <div id="customDomainList" class="custom-domain-list"></div>
+      <footer class="modal-footer">
+        <button class="ghost-button" value="cancel" data-i18n="customDomainCancel" type="submit"></button>
+        <button class="primary-action" id="customDomainConfirm" type="button" data-i18n="customDomainConfirm"></button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="fileDialog" class="modal">
+    <form method="dialog" class="modal-body file-modal">
+      <header class="modal-header">
+        <h2 data-i18n="fileMcpTitle"></h2>
+        <button class="icon-button" value="cancel" data-i18n-aria="close">x</button>
+      </header>
+      <div class="file-path-row">
+        <input id="filePathInput" placeholder="." />
+        <button id="listFilesBtn" type="button" data-i18n="open"></button>
+      </div>
+      <div id="fileBrowser" class="file-browser"></div>
+    </form>
+  </dialog>
+
+  <template id="messageTemplate">
+    <article class="message">
+      <div class="avatar"></div>
+      <div class="bubble"></div>
+    </article>
+  </template>
+
+  <script src="./i18n.js"></script>
+  <script src="./shared.js"></script>
+  <script src="./app.js"></script>
+  <script>
+    // Wire the nav language button to the same toggleLanguage in app.js
+    (function () {
+      const btn = document.getElementById('navLangBtn');
+      if (btn) {
+        btn.addEventListener('click', function () {
+          if (typeof toggleLanguage === 'function') toggleLanguage();
+        });
+      }
+      // Settings button is wired by shared.js automatically, so no extra code here.
+    })();
+  </script>
+</body>
+</html>
