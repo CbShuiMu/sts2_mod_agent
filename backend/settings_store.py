@@ -48,6 +48,7 @@ def provider_defaults(provider_id: str) -> dict[str, Any]:
         "base_url": provider.get("base_url", ""),
         "model": provider.get("models", [""])[0],
         "temperature": 0.2,
+        "context_length": 262144,
         "api_key": "",
     }
 
@@ -88,6 +89,7 @@ class SettingsStore:
                 "base_url": merged.get("base_url", ""),
                 "model": merged.get("model", ""),
                 "temperature": merged.get("temperature", 0.2),
+                "context_length": int(merged.get("context_length", 262144) or 0),
                 "has_key": has_key,
                 "key_source": "saved" if merged.get("api_key") else ("env" if env_key else ""),
             }
@@ -110,6 +112,12 @@ class SettingsStore:
                 provider["temperature"] = float(updates["temperature"])
             except (TypeError, ValueError):
                 provider["temperature"] = 0.2
+        if "context_length" in updates:
+            try:
+                value = int(updates["context_length"])
+                provider["context_length"] = max(0, value)
+            except (TypeError, ValueError):
+                provider["context_length"] = 262144
         if "api_key" in updates:
             raw_key = str(updates.get("api_key") or "").strip()
             if raw_key:

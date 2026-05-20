@@ -137,6 +137,8 @@ window.STS2_I18N = {
       labelApiKey: "API Key",
       labelBaseUrl: "Base URL",
       labelModel: "Model",
+      labelContextLength: "上下文长度（tokens）",
+      contextLengthPlaceholder: "0 表示不限制",
 
       // ── Shared nav ─────────────────────────────────────────────
       navHome: "首页",
@@ -372,6 +374,8 @@ window.STS2_I18N = {
       labelApiKey: "API Key",
       labelBaseUrl: "Base URL",
       labelModel: "Model",
+      labelContextLength: "Context length (tokens)",
+      contextLengthPlaceholder: "0 means unlimited",
 
       // ── Shared nav ─────────────────────────────────────────────
       navHome: "Home",

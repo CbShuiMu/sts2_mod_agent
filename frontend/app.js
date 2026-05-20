@@ -1943,6 +1943,7 @@ function renderSettings() {
       <label><span class="label-api-key"></span><input class="provider-key" type="password" autocomplete="off" /></label>
       <label><span class="label-base-url"></span><input class="provider-url" /></label>
       <label><span class="label-model"></span><input class="provider-model" list="models-${provider.id}" /><datalist id="models-${provider.id}"></datalist></label>
+      <label><span class="label-context-length"></span><input class="provider-context-length" type="number" min="0" step="1024" /></label>
       <div class="provider-actions">
         <button class="provider-save" type="button"></button>
         <button class="provider-clear" type="button"></button>
@@ -1953,9 +1954,13 @@ function renderSettings() {
     card.querySelector(".label-api-key").textContent = t("labelApiKey");
     card.querySelector(".label-base-url").textContent = t("labelBaseUrl");
     card.querySelector(".label-model").textContent = t("labelModel");
+    card.querySelector(".label-context-length").textContent = t("labelContextLength");
     card.querySelector(".provider-key").placeholder = t("apiKeyPlaceholder");
     card.querySelector(".provider-url").value = saved.base_url || provider.base_url || "";
     card.querySelector(".provider-model").value = saved.model || provider.models?.[0] || "";
+    const contextLengthInput = card.querySelector(".provider-context-length");
+    contextLengthInput.value = Number.isFinite(saved.context_length) ? saved.context_length : 262144;
+    contextLengthInput.placeholder = t("contextLengthPlaceholder");
     card.querySelector(".provider-save").textContent = t("save");
     card.querySelector(".provider-clear").textContent = t("clearKey");
     const datalist = card.querySelector("datalist");
@@ -1974,12 +1979,15 @@ async function saveProvider(providerId, card, clearKey) {
   const saveButton = card.querySelector(".provider-save");
   saveButton.textContent = t("saving");
   try {
+    const contextLengthRaw = card.querySelector(".provider-context-length").value.trim();
+    const contextLengthValue = contextLengthRaw === "" ? 262144 : Math.max(0, parseInt(contextLengthRaw, 10) || 0);
     state.config = await request(`/api/config/providers/${providerId}`, {
       method: "POST",
       body: JSON.stringify({
         api_key: card.querySelector(".provider-key").value.trim(),
         base_url: card.querySelector(".provider-url").value.trim(),
         model: card.querySelector(".provider-model").value.trim(),
+        context_length: contextLengthValue,
         default_provider_id: providerId,
         clear_key: clearKey,
       }),

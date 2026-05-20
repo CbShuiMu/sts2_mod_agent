@@ -1071,13 +1071,27 @@ select,
 
 .provider-card {
   display: grid;
-  grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 166px;
-  gap: 10px;
+  grid-template-columns: 140px minmax(0, 1.2fr) minmax(0, 1.2fr) minmax(0, 1fr) 120px 180px;
+  gap: 10px 12px;
   align-items: end;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
+}
+
+.provider-card label {
+  min-width: 0;
+}
+
+.provider-card input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.provider-card .provider-actions button {
+  white-space: nowrap;
 }
 
 .provider-name strong,
