@@ -1,4 +1,4 @@
-set MOD_PATH=E:\JellyProject\sts2_mod_agent\mods\sts-custom-card-copy
+set MOD_PATH=E:\JellyProject\sts2_mod_agent\mods\loudspeakermod
 
 set GODOT_PATH=E:\sts2_recomplie\Godot_v4.5.1-stable_mono_win64\Godot_v4.5.1-stable_mono_win64.exe
 

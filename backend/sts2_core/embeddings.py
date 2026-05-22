@@ -20,6 +20,48 @@ _EMBEDDING_CACHE: dict[str, "PipelineEmbeddings"] = {}
 _EMBEDDING_CACHE_LOCK = RLock()
 
 
+def _unescape_double_quoted(value: str) -> str:
+    """Apply dotenv-style backslash unescaping for double-quoted values."""
+    result: list[str] = []
+    i = 0
+    while i < len(value):
+        ch = value[i]
+        if ch == "\\" and i + 1 < len(value):
+            nxt = value[i + 1]
+            if nxt in ("\\", '"', "'"):
+                result.append(nxt)
+            elif nxt == "n":
+                result.append("\n")
+            elif nxt == "r":
+                result.append("\r")
+            elif nxt == "t":
+                result.append("\t")
+            else:
+                result.append(ch)
+                result.append(nxt)
+            i += 2
+        else:
+            result.append(ch)
+            i += 1
+    return "".join(result)
+
+
+def decode_env_value(raw: str) -> str:
+    """Strip surrounding quotes from a raw .env value.
+
+    Double-quoted values get standard backslash unescaping; single-quoted
+    values are returned verbatim (so Windows paths with backslashes survive
+    round-trips intact).
+    """
+    value = raw.strip()
+    if len(value) >= 2 and value[0] == value[-1]:
+        if value[0] == '"':
+            return _unescape_double_quoted(value[1:-1])
+        if value[0] == "'":
+            return value[1:-1]
+    return value
+
+
 def load_env_file(env_path: Path) -> None:
     if not env_path.exists():
         return
@@ -29,7 +71,7 @@ def load_env_file(env_path: Path) -> None:
             continue
         key, value = line.split("=", 1)
         key = key.strip()
-        value = value.strip().strip('"').strip("'")
+        value = decode_env_value(value)
         if key and key not in os.environ:
             os.environ[key] = value
 

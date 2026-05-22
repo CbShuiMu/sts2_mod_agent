@@ -1,6 +1,4 @@
 {
-  "FLAME_CAR.description":"对任意玩家造成{Damage:diff()}点伤害",
-  "FLAME_CAR.title":"傻逼打击",
   "ABRASIVE.description": "获得{DexterityPower:diff()}点[gold]敏捷[/gold]。\n获得{ThornsPower:diff()}点[gold]荆棘[/gold]。",
   "ABRASIVE.title": "磨蚀",
   "ACCELERANT.description": "[gold]中毒[/gold]会额外触发{Accelerant:diff()}次。",

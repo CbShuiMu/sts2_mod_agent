@@ -1959,7 +1959,7 @@ function renderSettings() {
     card.querySelector(".provider-url").value = saved.base_url || provider.base_url || "";
     card.querySelector(".provider-model").value = saved.model || provider.models?.[0] || "";
     const contextLengthInput = card.querySelector(".provider-context-length");
-    contextLengthInput.value = Number.isFinite(saved.context_length) ? saved.context_length : 262144;
+    contextLengthInput.value = Number.isFinite(saved.context_length) ? saved.context_length : 524288;
     contextLengthInput.placeholder = t("contextLengthPlaceholder");
     card.querySelector(".provider-save").textContent = t("save");
     card.querySelector(".provider-clear").textContent = t("clearKey");
@@ -1980,7 +1980,7 @@ async function saveProvider(providerId, card, clearKey) {
   saveButton.textContent = t("saving");
   try {
     const contextLengthRaw = card.querySelector(".provider-context-length").value.trim();
-    const contextLengthValue = contextLengthRaw === "" ? 262144 : Math.max(0, parseInt(contextLengthRaw, 10) || 0);
+    const contextLengthValue = contextLengthRaw === "" ? 524288 : Math.max(0, parseInt(contextLengthRaw, 10) || 0);
     state.config = await request(`/api/config/providers/${providerId}`, {
       method: "POST",
       body: JSON.stringify({

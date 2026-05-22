@@ -29,7 +29,7 @@ from agent import (
 )
 from mcp.local_files import LocalFileMCP
 from settings_store import SettingsStore
-from sts2_core.embeddings import DEFAULT_EMBEDDING_MODEL, load_env_file
+from sts2_core.embeddings import DEFAULT_EMBEDDING_MODEL, decode_env_value, load_env_file
 from sts2_core.localization_vector_utils import (
     localization_collection_name,
     localization_persist_path,
@@ -143,6 +143,7 @@ def raw_tool_call_ids(message: Any) -> list[str]:
 
 _SENTENCE_SPLIT_RE = re.compile(r"[\.!?,;。！？，；、\n]+")
 _DESCRIPTION_KEY_RE = re.compile(r"description", re.IGNORECASE)
+_UPGRADED_KEY_RE = re.compile(r"upgrade", re.IGNORECASE)
 _COLOR_TAG_RE = re.compile(r"\[/?[^\]\n]+\]")
 
 
@@ -167,7 +168,7 @@ def _walk_descriptions(node: Any, key_path: list[str], out: list[tuple[str, str]
             key_str = str(key)
             next_path = key_path + [key_str]
             if isinstance(value, str):
-                if _DESCRIPTION_KEY_RE.search(key_str):
+                if _DESCRIPTION_KEY_RE.search(key_str) and not _UPGRADED_KEY_RE.search(key_str):
                     out.append((".".join(next_path), value))
             else:
                 _walk_descriptions(value, next_path, out)
@@ -196,6 +197,8 @@ def extract_description_segments(sources: list[tuple[str, str]]) -> list[dict[st
                 flags=re.IGNORECASE,
             ):
                 key = match.group(1)
+                if _UPGRADED_KEY_RE.search(key):
+                    continue
                 raw = match.group(2)
                 try:
                     decoded = json.loads(f'"{raw}"')
@@ -497,6 +500,56 @@ def build_app(
             return jsonify({"ok": False, "error": f"open failed: {exc}"}), 500
         return jsonify({"ok": True, "path": str(target)})
 
+    @app.post("/api/mods/<mod_name>/localization")
+    def update_mod_localization(mod_name: str):
+        if ".." in mod_name or "/" in mod_name or "\\" in mod_name:
+            return jsonify({"ok": False, "error": "invalid mod name"}), 400
+        payload = request.get_json(silent=True) or {}
+        ui_lang = str(payload.get("lang") or "").strip().lower()
+        category = str(payload.get("category") or "").strip()
+        snake = str(payload.get("snake") or "").strip()
+        field = str(payload.get("field") or "").strip().lower()
+        value = payload.get("value")
+        if ui_lang not in {"zh", "en"}:
+            return jsonify({"ok": False, "error": "invalid lang"}), 400
+        if field not in {"title", "description"}:
+            return jsonify({"ok": False, "error": "invalid field"}), 400
+        if not snake or not re.fullmatch(r"[a-z0-9_]+", snake):
+            return jsonify({"ok": False, "error": "invalid snake"}), 400
+        if not category or not re.fullmatch(r"[A-Za-z0-9_\-]+", category):
+            return jsonify({"ok": False, "error": "invalid category"}), 400
+        if not isinstance(value, str):
+            return jsonify({"ok": False, "error": "value must be string"}), 400
+        lang_dir = {"zh": "zhs", "en": "eng"}[ui_lang]
+        mod_root = (PROJECT_ROOT / "mods" / mod_name).resolve()
+        loc_file = (mod_root / "localization" / lang_dir / f"{category.lower()}.json").resolve()
+        try:
+            loc_file.relative_to(mod_root)
+        except ValueError:
+            return jsonify({"ok": False, "error": "path escapes mod root"}), 400
+        loc_file.parent.mkdir(parents=True, exist_ok=True)
+        data: dict[str, Any] = {}
+        if loc_file.exists():
+            try:
+                raw = loc_file.read_text(encoding="utf-8")
+                raw = re.sub(r",(\s*[}\]])", r"\1", raw)
+                parsed = json.loads(raw)
+                if isinstance(parsed, dict):
+                    data = parsed
+            except (OSError, ValueError) as exc:
+                return jsonify({"ok": False, "error": f"read failed: {exc}"}), 500
+        key = f"{snake.upper()}.{field}"
+        data[key] = value
+        ordered = dict(sorted(data.items(), key=lambda kv: kv[0]))
+        try:
+            loc_file.write_text(
+                json.dumps(ordered, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+        except OSError as exc:
+            return jsonify({"ok": False, "error": f"write failed: {exc}"}), 500
+        return jsonify({"ok": True, "key": key, "path": str(loc_file.relative_to(PROJECT_ROOT)).replace("\\", "/")})
+
     @app.post("/api/mods/<mod_name>/export")
     def export_mod(mod_name: str):
         if ".." in mod_name or "/" in mod_name or "\\" in mod_name:
@@ -676,7 +729,7 @@ def build_app(
         for key, line_no in index.items():
             raw = lines[line_no]
             _, _, value = raw.partition("=")
-            out[key] = value.strip()
+            out[key] = decode_env_value(value)
         return out
 
     def _mask_secret(value: str) -> dict[str, Any]:
@@ -718,12 +771,14 @@ def build_app(
         def quote_if_needed(value: str) -> str:
             if value == "":
                 return ""
-            # Quote values containing whitespace or '#' so the parser doesn't
-            # truncate them at an inline comment.
-            if any(ch.isspace() for ch in value) or "#" in value:
-                escaped = value.replace("\\", "\\\\").replace('"', '\\"')
-                return f'"{escaped}"'
-            return value
+            if not (any(ch.isspace() for ch in value) or "#" in value):
+                return value
+            # Prefer single quotes — they don't interpret backslash escapes, so
+            # Windows paths round-trip without `\` doubling on every save.
+            if "'" not in value:
+                return f"'{value}'"
+            escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+            return f'"{escaped}"'
 
         for key, raw_value in updates.items():
             if raw_value is None:

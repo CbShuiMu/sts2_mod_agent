@@ -121,13 +121,47 @@ function renderFolders(mods) {
 }
 
 // Strip the [color]...[/color] markup used in localization strings; preserve
-// the inner text. Also turn smartDescription placeholders like {Amount} into
-// a readable form.
+// the inner text. Used for things like img alt where rich rendering is N/A.
 function stripLocMarkup(text) {
   if (!text) return '';
   let s = String(text);
   s = s.replace(/\[\/?\w+\]/g, '');
+  s = s.replace(/\\n/g, ' ').replace(/\n/g, ' ');
   return s;
+}
+
+// Tags recognized inside localization strings. Unknown tags are dropped
+// (wrapper removed) but their inner text is preserved.
+const LOC_KNOWN_TAGS = new Set([
+  'aqua', 'blue', 'gold', 'green', 'orange', 'pink', 'purple', 'red', 'rainbow',
+  'b', 'i', 'center',
+  'jitter', 'shake', 'sine', 'thinky_dots',
+]);
+
+// Render the raw localization string as HTML: literal "\n" and real newlines
+// become <br>, and [tag]…[/tag] (including nested) becomes a styled <span>.
+function renderLocMarkupHTML(raw) {
+  if (raw === null || raw === undefined) return '';
+  let s = esc(String(raw));
+  // Resolve innermost [tag]...[/tag] first; repeat to unwind nesting.
+  const innermost = /\[(\w+)\]([^\[\]]*)\[\/\1\]/;
+  for (let i = 0; i < 16; i++) {
+    let hit = false;
+    s = s.replace(innermost, (_m, tag, inner) => {
+      hit = true;
+      if (!LOC_KNOWN_TAGS.has(tag)) return inner;
+      return `<span class="loc-tag loc-tag-${tag}">${inner}</span>`;
+    });
+    if (!hit) break;
+  }
+  s = s.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
+  return s;
+}
+
+// Inverse of "edit shows raw text": when the user commits an edit, real
+// newlines they typed (Shift+Enter) become the literal \n the JSON stores.
+function normalizeEditedText(text) {
+  return String(text ?? '').replace(/\r\n?/g, '\n').replace(/\n/g, '\\n');
 }
 
 function renderFiles(files, modName) {
@@ -189,32 +223,36 @@ function renderFiles(files, modName) {
       `;
       wrap.appendChild(row);
 
-      if (file.image_path || (file.localization && Object.keys(file.localization).length)) {
+      const editableCategory = file.category && /^[A-Za-z0-9_-]+$/.test(file.category);
+      const editableSnake = file.snake_name && /^[a-z0-9_]+$/.test(file.snake_name);
+      const canEdit = !!(editableCategory && editableSnake);
+
+      if (canEdit || file.image_path || (file.localization && Object.keys(file.localization).length)) {
         const lang = window.STS2_SHARED ? window.STS2_SHARED.getLang() : 'zh';
         const loc = (file.localization && (file.localization[lang] || file.localization.en || file.localization.zh)) || null;
-        const title = loc ? stripLocMarkup(loc.title) : '';
-        const desc  = loc ? stripLocMarkup(loc.description) : '';
+        const titleRaw = loc ? String(loc.title ?? '') : '';
+        const descRaw  = loc ? String(loc.description ?? '') : '';
 
-        if (file.image_path || title || desc) {
+        if (file.image_path || titleRaw || descRaw || canEdit) {
           const card = el('div', 'loc-card');
           if (file.image_path) {
             const img = el('img', 'loc-card-img');
-            img.alt = title || file.snake_name || '';
+            img.alt = stripLocMarkup(titleRaw) || file.snake_name || '';
             img.loading = 'lazy';
             img.src = `/api/mods/${encodeURIComponent(modName)}/file?path=${encodeURIComponent(file.image_path)}`;
             card.appendChild(img);
           }
           const body = el('div', 'loc-card-body');
-          if (title) {
-            const h = el('div', 'loc-card-title');
-            h.textContent = title;
-            body.appendChild(h);
-          }
-          if (desc) {
-            const d = el('div', 'loc-card-desc');
-            d.textContent = desc;
-            body.appendChild(d);
-          }
+          const h = el('div', 'loc-card-title');
+          h.innerHTML = renderLocMarkupHTML(titleRaw);
+          if (canEdit) bindLocEdit(h, modName, file, lang, 'title');
+          body.appendChild(h);
+
+          const d = el('div', 'loc-card-desc');
+          d.innerHTML = renderLocMarkupHTML(descRaw);
+          if (canEdit) bindLocEdit(d, modName, file, lang, 'description');
+          body.appendChild(d);
+
           card.appendChild(body);
           wrap.appendChild(card);
         }
@@ -223,13 +261,13 @@ function renderFiles(files, modName) {
       if (missing.length) {
         const miss = el('div', 'category-missing');
         const label = el('span', 'category-missing-label');
-        label.textContent = t('modMissingLabel') || '缺失:';
+        label.textContent = t('modMissingLabel');
         miss.appendChild(label);
         for (const m of missing) {
           const link = el('button', 'missing-link');
           link.type = 'button';
           link.textContent = m.path;
-          link.title = t('modMissingClickTip') || '点击打开文件夹';
+          link.title = t('modMissingClickTip');
           link.addEventListener('click', () => openFolder(modName, m.path));
           miss.appendChild(link);
         }
@@ -244,6 +282,111 @@ function renderFiles(files, modName) {
   explorerContent.innerHTML = '';
   explorerContent.appendChild(bar);
   explorerContent.appendChild(board);
+}
+
+function bindLocEdit(node, modName, file, lang, field) {
+  node.classList.add('loc-editable');
+  if (!node.innerHTML) node.classList.add('loc-empty');
+  node.title = t('modLocEditTip');
+
+  let editing = false;
+  let originalRaw = (() => {
+    const loc = (file.localization && (file.localization[lang] || file.localization.en || file.localization.zh)) || null;
+    return loc ? String(loc[field] ?? '') : '';
+  })();
+
+  const renderDisplay = (raw) => {
+    node.innerHTML = renderLocMarkupHTML(raw);
+    node.classList.toggle('loc-empty', !raw);
+  };
+
+  const beginEdit = () => {
+    if (editing) return;
+    editing = true;
+    node.contentEditable = 'plaintext-only';
+    if (node.contentEditable !== 'plaintext-only') node.contentEditable = 'true';
+    node.classList.add('loc-editing');
+    node.classList.remove('loc-empty');
+    // Show the raw source: literal "\n", [color] tags and all.
+    node.textContent = originalRaw;
+    node.focus();
+    const sel = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    range.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  };
+
+  const cancelEdit = () => {
+    if (!editing) return;
+    editing = false;
+    node.contentEditable = 'false';
+    node.classList.remove('loc-editing');
+    renderDisplay(originalRaw);
+  };
+
+  const commitEdit = async () => {
+    if (!editing) return;
+    editing = false;
+    node.contentEditable = 'false';
+    node.classList.remove('loc-editing');
+    // textContent may contain real \n from Shift+Enter — normalize them to
+    // the literal "\n" the JSON files use, so round-trips stay consistent.
+    const newText = normalizeEditedText(node.textContent).replace(/\s+$/g, '');
+    if (newText === originalRaw) {
+      renderDisplay(originalRaw);
+      return;
+    }
+    node.classList.add('loc-saving');
+    node.textContent = newText;
+    try {
+      await saveLocalization(modName, file, lang, field, newText);
+      if (!file.localization) file.localization = {};
+      if (!file.localization[lang]) file.localization[lang] = { title: '', description: '' };
+      file.localization[lang][field] = newText;
+      originalRaw = newText;
+      renderDisplay(originalRaw);
+    } catch (err) {
+      renderDisplay(originalRaw);
+      showError(t('modLocSaveFailed', { message: err.message || String(err) }));
+    } finally {
+      node.classList.remove('loc-saving');
+    }
+  };
+
+  node.addEventListener('click', () => { if (!editing) beginEdit(); });
+  node.addEventListener('keydown', (e) => {
+    if (!editing) return;
+    if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
+    else if (e.key === 'Enter' && field === 'title') { e.preventDefault(); commitEdit(); }
+    else if (e.key === 'Enter' && !e.shiftKey && field === 'description') {
+      // Description: bare Enter commits; Shift+Enter inserts a newline that
+      // commitEdit will store as the literal "\n".
+      e.preventDefault();
+      commitEdit();
+    }
+  });
+  node.addEventListener('blur', () => { if (editing) commitEdit(); });
+}
+
+async function saveLocalization(modName, file, lang, field, value) {
+  const res = await fetch(`/api/mods/${encodeURIComponent(modName)}/localization`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      lang,
+      category: file.category,
+      snake: file.snake_name,
+      field,
+      value,
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.ok === false) {
+    throw new Error(data.error || ('HTTP ' + res.status));
+  }
+  return data;
 }
 
 async function deleteMod(modName, itemEl) {

@@ -236,6 +236,10 @@ window.STS2_I18N = {
       modDeleteConfirm: "确认删除项目 \"{name}\" ?\n此操作会删除整个文件夹，且不可撤销。",
       modDeleting: "删除中…",
       modDeleteFailed: "删除失败：{message}",
+      modMissingLabel: "缺少资源:",
+      modMissingClickTip: "点击打开文件夹",
+      modLocSaveFailed: "保存失败：{message}",
+      modLocEditTip: "点击编辑，Enter 保存，Esc 取消",
     },
 
     en: {
@@ -473,6 +477,10 @@ window.STS2_I18N = {
       modDeleteConfirm: "Delete project \"{name}\"?\nThe entire folder will be removed and this cannot be undone.",
       modDeleting: "Deleting…",
       modDeleteFailed: "Delete failed: {message}",
+      modMissingLabel: "Missing assets:",
+      modMissingClickTip: "Click to open the folder",
+      modLocSaveFailed: "Save failed: {message}",
+      modLocEditTip: "Click to edit, Enter to save, Esc to cancel",
     }
   },
 

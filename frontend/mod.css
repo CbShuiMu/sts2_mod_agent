@@ -329,36 +329,48 @@
 .category-board {
   display: flex;
   flex-direction: column;
+  gap: 24px;
+}
+
+/* A category is a grid of entry-cards; the head spans the full row. */
+.category-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 12px;
 }
 
-.category-col {
-  border: 1px solid var(--line-strong);
-  border-radius: 10px;
-  background: #fff;
-  overflow: hidden;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
-}
-
 .category-head {
-  padding: 10px 14px;
-  background: rgba(245, 245, 247, 0.8);
-  border-bottom: 1px solid var(--line-strong);
+  grid-column: 1 / -1;
+  padding: 8px 4px;
   font-size: 12px;
   font-weight: 700;
   text-transform: capitalize;
   letter-spacing: 0.04em;
   color: var(--text);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .category-item {
   display: grid;
-  grid-template-columns: 28px 1fr auto auto;
-  gap: 10px;
+  grid-template-columns: 24px 1fr auto;
+  gap: 8px;
   align-items: center;
-  padding: 9px 14px;
+  padding: 9px 12px;
   border-bottom: 1px solid var(--line);
   font-size: 13px;
+}
+
+.file-row-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* In the compact card layout the snake_name detail wastes a column; hide it
+   (it's still in the row's title tooltip). */
+.category-item .asset-detail {
+  display: none;
 }
 
 .asset-badge {
@@ -384,19 +396,25 @@
 }
 
 .category-entry {
-  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.04);
 }
-.category-entry:last-child { border-bottom: none; }
-.category-entry .category-item { border-bottom: none; }
+.category-entry .category-item { border-bottom: 1px solid var(--line); }
 
 .category-missing {
-  padding: 4px 14px 10px 50px;
+  padding: 8px 12px 10px;
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 10px;
+  gap: 6px 8px;
   align-items: center;
   font-size: 12px;
   color: #ff3b30;
+  border-top: 1px dashed rgba(255, 59, 48, 0.25);
 }
 
 .category-missing-label {
@@ -423,18 +441,18 @@
 .loc-card {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-  margin: 4px 14px 12px 50px;
-  padding: 12px 14px;
+  gap: 12px;
+  padding: 12px;
   background: rgba(0, 122, 255, 0.04);
-  border: 1px solid rgba(0, 122, 255, 0.18);
-  border-radius: 10px;
+  border-top: 1px solid rgba(0, 122, 255, 0.18);
+  flex: 1;
+  min-height: 0;
 }
 
 .loc-card-img {
   flex-shrink: 0;
-  width: 96px;
-  height: 96px;
+  width: 72px;
+  height: 72px;
   object-fit: contain;
   background: rgba(255, 255, 255, 0.65);
   border: 1px solid var(--line);
@@ -464,6 +482,64 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.loc-editable {
+  cursor: text;
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.loc-editable:hover {
+  background: rgba(0, 122, 255, 0.07);
+}
+
+.loc-editable.loc-empty::before {
+  content: "—";
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.loc-editable.loc-editing {
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.45);
+  outline: none;
+  cursor: text;
+  white-space: pre-wrap;
+}
+
+.loc-editable.loc-editing.loc-empty::before {
+  content: none;
+}
+
+.loc-editable.loc-saving {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ── Inline localization markup ─────────────────────── */
+.loc-tag-gold    { color: #c89b3c; font-weight: 600; }
+.loc-tag-red     { color: #e54b4b; font-weight: 600; }
+.loc-tag-orange  { color: #ff8c00; font-weight: 600; }
+.loc-tag-pink    { color: #ff5e9c; font-weight: 600; }
+.loc-tag-purple  { color: #9c27b0; font-weight: 600; }
+.loc-tag-blue    { color: #2f7ed8; font-weight: 600; }
+.loc-tag-aqua    { color: #00a0b0; font-weight: 600; }
+.loc-tag-green   { color: #2faa4a; font-weight: 600; }
+.loc-tag-rainbow {
+  font-weight: 600;
+  background: linear-gradient(90deg, #e54b4b, #ff8c00, #c89b3c, #2faa4a, #2f7ed8, #9c27b0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.loc-tag-b { font-weight: 700; }
+.loc-tag-i { font-style: italic; }
+.loc-tag-center { display: block; text-align: center; }
+.loc-tag-jitter,
+.loc-tag-shake,
+.loc-tag-sine { font-style: italic; }
+.loc-tag-thinky_dots { color: var(--muted); font-style: italic; }
 
 .category-item:last-child {
   border-bottom: none;

@@ -7,7 +7,7 @@
       "base_url": "https://api.deepseek.com/v1",
       "model": "deepseek-v4-pro",
       "temperature": 0.2,
-      "context_length": 262144,
+      "context_length": 524288,
       "api_key": ""
     }
   }
